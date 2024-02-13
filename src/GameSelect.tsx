@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Board from "./Gomoku";
-const { ipcRenderer } = window.require("electron");
-//import M5nControler from "./rendererProtocol";
+
+import M5nControler from "./rendererProtocol";
 
 function GameSelect(){
     const [game, setGame] = useState<string | null>(null);
@@ -9,9 +9,10 @@ function GameSelect(){
     //handler
     async function handleAiByLocalClick(){
         setGame("aiByLocal");
-        console.log(ipcRenderer.sendSync("startSync", "fromRender"));
-        //let m5n = new m5nControler();
-        //await m5n.start();
+        //console.log(ipcRenderer.sendSync("startSync", "fromRender"));
+        let m5n = new M5nControler();
+        let temp = await m5n.start();
+        console.log(temp);
         console.log("m5nControler start함수실행됨");
     }
 
