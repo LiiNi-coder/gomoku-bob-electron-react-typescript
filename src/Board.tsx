@@ -1,20 +1,6 @@
-//import './App.css';
 import { useEffect, useState } from 'react';
 
-type squareProps = {
-  value: string;
-  onSquareClick: ()=>void;
-}
-
-const Square = ({value, onSquareClick}: squareProps)=>{
-  return (
-    <button className="square" onClick={onSquareClick}>
-      {value}
-    </button>
-  );
-}
-
-function Board(){
+export default function Board(){
   const initial_board = Array(15).fill(null).map(() => Array(15).fill(null));
   var initial_stone = false //false:white, true:black
   //states
@@ -62,4 +48,15 @@ function Board(){
   );
 }
 
-export default Board;
+type squareProps = {
+  value: string;
+  onSquareClick: ()=>void;
+}
+
+const Square = ({value, onSquareClick}: squareProps)=>{
+  return (
+    <button className="square" onClick={onSquareClick}>
+      {value}
+    </button>
+  );
+}

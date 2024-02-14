@@ -6,7 +6,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 .square {
   background: #fff;
   border: 1px solid #999;
@@ -20,6 +19,7 @@ body {
   padding: 0;
   text-align: center;
   width: 34px;
+  position: relative;
 }
 
 .board-row:after {
