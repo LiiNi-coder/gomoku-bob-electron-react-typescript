@@ -18,5 +18,6 @@ export enum Process{
 
 export enum Game{
     ESTABLISHCONNECTION="establish connection",
+    GAMESTART="game_start",
     SETSTONE="set_stone"
 }

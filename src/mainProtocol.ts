@@ -79,7 +79,7 @@ function m5nStart(mainWindow:BrowserWindow){
     const [server_ip, port, cwd] = [process.env.SERVER_IP, process.env.PORT, process.env.M5N_CWD];
     console.log(`[CWD]${cwd}`);
     const child = spawn("M5N.Slave",
-        [`${server_ip}:${port}`, `./app`],
+        [`${server_ip}:${port}`, `./app`, `main`],
         {
             //detached:true,
             cwd:cwd,
@@ -90,10 +90,11 @@ function m5nStart(mainWindow:BrowserWindow){
         );
 
     function dataToJobs(data: object) {
-        let tokens_by_sep = data.toString().split("|").slice(1);
+        //console.log(`[dataToJobs]${data.toString()}`);
+        let tokens_by_sep = data.toString().trim().split("|").slice(1);
         let jobs:m5njob[] = [];
         for(let token of tokens_by_sep){
-            let temp = token.split("\n");
+            let temp = token.trim().split(/\r?\n/);
             jobs.push({
                 command:temp[0],
                 text:temp.slice(1)
@@ -105,18 +106,20 @@ function m5nStart(mainWindow:BrowserWindow){
     //handler
     child.stdout.on("data", (data:object)=>{
         console.log(`[STDOUT]${data.toString()}`);
-        if(data.toString().startsWith("esta")){
+        if(data.toString().startsWith("Connection established")){
             mainWindow.webContents.send(Channel.GAME,Game.ESTABLISHCONNECTION);
             return;
         }
+
+        mainWindow.webContents.send(Channel.GAME,Game.GAMESTART);
         let jobs = dataToJobs(data);
         for(let job of jobs){
-            if(handlersByM5nStdout[job.command]){
+            if(handlersByM5nStdout[job.command]){                
                 // 핸들러실행
                 handlersByM5nStdout[job.command]();
             }else{
                 // m5n의 출력중 개발자가 상정하지않은것이 있었다
-                console.error("m5n's output is not handled.");
+                console.error("[LOGICBUG]m5n's output is not handled.");
             }
         }
         
@@ -135,9 +138,7 @@ function m5nStart(mainWindow:BrowserWindow){
     });
 }
 
-
 type m5njob = {
     command:string,
     text:string[]
 }
-
