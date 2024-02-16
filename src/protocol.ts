@@ -12,12 +12,17 @@ export enum Channel{
 
 export enum Process{
     START,//m5n자식프로세스를 실행시켜라
+    ESTABLISHCONNECTION,
     EXIT, //m5n이 닫힘(whther well closed, or abnormally)
     STDERR, //m5n이 예기치못한 에러내뿜음(stderr를 내뱉음)
 }
 
-export enum Game{
-    ESTABLISHCONNECTION="establish connection",
-    GAMESTART="game_start",
-    SETSTONE="set_stone"
+export enum Game{//게임이 매칭되었음을 상정하고, 인게임중
+    SETCOLOR="set_colour",
+    SETSTONE="set_stone",
+    CHOOSECOLOR="choose_colour",
+    PLACESTONE="place_stone",
+    MAKEDECISION="make_decision",
+    VICTORY="victory",
+    DEFEAT="defeat",
 }

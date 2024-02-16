@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Board from "./Board";
-
-import { m5nStart } from "./rendererProtocol";
 import { Channel, Game, Process, ReplyCode } from "./protocol";
 import GameControler from "./GameControler";
-import Button from "react-bootstrap/Button";
 const { ipcRenderer } = window.require("electron");
-import { Spinner } from "react-bootstrap";
+import GameEntry from "./GameEntry";
+import GameInformation from "./GameInformation";
 
 export enum matchStatus{
     UNMATCHED,
@@ -14,19 +12,38 @@ export enum matchStatus{
     MATCHING,
     MATCHED
 };
-
+export enum color{
+    BLACK,
+    WHITE
+}
 export default function DashBoard(){
     //state
     //const [game, setGame] = useState<string | null>(null);
     const [isMatched, setIsMathched] = useState<matchStatus>(matchStatus.UNMATCHED);
+    const [myColor, setMyColor] = useState<color|null>(null);
+    const [myTurn, setMyTurn] = useState(false);
     
     //매번 렌더링시에 아래콜백함수실행
     useEffect(()=>{
         console.log(`[isMatched]${isMatched}`);
     });
-    //
-
+    
     //handler
+    function assignHandlerGameChannel() {
+        ipcRenderer.on(Channel.GAME, (_, args:Game)=>{
+            //Game채널에서 메세지를 받으면 게임시작으로 취급함
+            if(isMatched!==matchStatus.MATCHED)
+                setIsMathched(matchStatus.MATCHED);
+            switch(args){
+                case Game.SETCOLOR:{
+                    break;
+                }
+                case Game.SETSTONE:{
+                    break;
+                }
+            }
+        });
+    }
     async function handleAiLocalPlayClick(){
         //setGame("AiLocalPlay");
         ipcRenderer.send(Channel.PROCESS, Process.START);
@@ -34,48 +51,31 @@ export default function DashBoard(){
             switch(args){
                 case Process.STDERR:{
                     ipcRenderer.removeAllListeners(Channel.PROCESS);
+                    ipcRenderer.removeAllListeners(Channel.GAME);
                     setTimeout(()=>{
                         setIsMathched(matchStatus.UNMATCHED);
-                    }, 3000);
+                    }, 5000);
                     break;
                 }
-            }
-        });
-        ipcRenderer.on(Channel.GAME, (_, args:Game)=>{
-            switch(args){
-                case Game.ESTABLISHCONNECTION:{
+                case Process.ESTABLISHCONNECTION:{
                     setIsMathched(matchStatus.MATCHING);
-                    break;
-                }
-                case Game.GAMESTART:{
-                    setIsMathched(matchStatus.MATCHED);
-                    break;
+                    assignHandlerGameChannel();
                 }
             }
         });
-        // try {
-        //     await m5nStart(setIsMathched);
-        // } catch (error) {
-        //     console.warn(error);
-        //     setIsMathched(matchStatus.UNMATCHED);
-        // };
+        
     }
 
-    switch(isMatched){
-        case matchStatus.UNMATCHED:
-            return (<Button variant="outline-primary" onClick={handleAiLocalPlayClick}>[myAI]Local Server대전 시작</Button>);
-        case matchStatus.MATCHING:
-            return (
-            <Button variant="primary" disabled>
-                <Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                />상대를 찾고 있습니다...
-            </Button>);  // 로딩창을 렌더링합니다.
-        case matchStatus.MATCHED:
-            return (<GameControler />);
-    }
+    return (
+    <>
+    <div className="GameEntry-wrapper" style={{height:60, padding:10}}>
+        <GameEntry isMatched={isMatched} handleAiLocalPlayClick={handleAiLocalPlayClick} />
+    </div>
+    <div className="GameInformation-wrapper" style={{height:300}}>
+        {isMatched === matchStatus.MATCHED && <GameInformation myColor={myColor} />}
+    </div>
+    <div className="GameControler-wrapper" style={{height:135}}>
+        {isMatched === matchStatus.MATCHED && <GameControler />}
+    </div>
+    </>);
 }
