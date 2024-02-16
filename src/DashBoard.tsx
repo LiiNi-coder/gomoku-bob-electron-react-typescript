@@ -1,70 +1,30 @@
 import React, { useEffect, useState } from "react";
 import Board from "./Board";
-import { Channel, Game, Process, ReplyCode } from "./protocol";
+import { Channel, Game, Process, ReplyCode, gameMessageByIpc } from "./protocol";
 import GameControler from "./GameControler";
-const { ipcRenderer } = window.require("electron");
+
 import GameEntry from "./GameEntry";
 import GameInformation from "./GameInformation";
+import { matchStatus, turnStatus } from "./Page";
 
-export enum matchStatus{
-    UNMATCHED,
-    // CONNECTING,
-    MATCHING,
-    MATCHED
-};
 export enum color{
-    BLACK,
-    WHITE
+    WHITE=1,
+    BLACK=2,
 }
-export default function DashBoard(){
+export type dashBoardProps={
+    myColor:color
+    isMatched:matchStatus,
+    setIsMatched:React.Dispatch<React.SetStateAction<matchStatus>>
+    handleAiLocalPlayClick:()=>void
+    nowTurn:turnStatus
+}
+export default function DashBoard({myColor, isMatched, setIsMatched, handleAiLocalPlayClick, nowTurn}:dashBoardProps){
     //state
-    //const [game, setGame] = useState<string | null>(null);
-    const [isMatched, setIsMathched] = useState<matchStatus>(matchStatus.UNMATCHED);
-    const [myColor, setMyColor] = useState<color|null>(null);
-    const [myTurn, setMyTurn] = useState(false);
     
     //매번 렌더링시에 아래콜백함수실행
     useEffect(()=>{
         console.log(`[isMatched]${isMatched}`);
     });
-    
-    //handler
-    function assignHandlerGameChannel() {
-        ipcRenderer.on(Channel.GAME, (_, args:Game)=>{
-            //Game채널에서 메세지를 받으면 게임시작으로 취급함
-            if(isMatched!==matchStatus.MATCHED)
-                setIsMathched(matchStatus.MATCHED);
-            switch(args){
-                case Game.SETCOLOR:{
-                    break;
-                }
-                case Game.SETSTONE:{
-                    break;
-                }
-            }
-        });
-    }
-    async function handleAiLocalPlayClick(){
-        //setGame("AiLocalPlay");
-        ipcRenderer.send(Channel.PROCESS, Process.START);
-        ipcRenderer.on(Channel.PROCESS, (_, args:Process)=>{
-            switch(args){
-                case Process.STDERR:{
-                    ipcRenderer.removeAllListeners(Channel.PROCESS);
-                    ipcRenderer.removeAllListeners(Channel.GAME);
-                    setTimeout(()=>{
-                        setIsMathched(matchStatus.UNMATCHED);
-                    }, 5000);
-                    break;
-                }
-                case Process.ESTABLISHCONNECTION:{
-                    setIsMathched(matchStatus.MATCHING);
-                    assignHandlerGameChannel();
-                }
-            }
-        });
-        
-    }
 
     return (
     <>
@@ -75,7 +35,7 @@ export default function DashBoard(){
         {isMatched === matchStatus.MATCHED && <GameInformation myColor={myColor} />}
     </div>
     <div className="GameControler-wrapper" style={{height:135}}>
-        {isMatched === matchStatus.MATCHED && <GameControler />}
+        {isMatched === matchStatus.MATCHED && <GameControler nowTurn={nowTurn}/>}
     </div>
     </>);
 }

@@ -26,3 +26,10 @@ export enum Game{//게임이 매칭되었음을 상정하고, 인게임중
     VICTORY="victory",
     DEFEAT="defeat",
 }
+
+export type gameMessageByIpc = {
+    keyword:Game,
+    x?:number,
+    y?:number,
+    color?:number
+}

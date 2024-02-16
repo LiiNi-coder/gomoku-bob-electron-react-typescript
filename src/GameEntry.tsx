@@ -1,4 +1,4 @@
-import { matchStatus } from "./DashBoard";
+import { matchStatus } from "./Page";
 import Button from "react-bootstrap/Button";
 import { Spinner } from "react-bootstrap";
 import { MouseEventHandler } from "react";

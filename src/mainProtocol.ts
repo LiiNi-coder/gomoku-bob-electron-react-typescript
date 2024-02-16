@@ -2,7 +2,8 @@ const path = require('path');
 const url = require('url');
 import { spawn } from "child_process";
 import { BrowserWindow, ipcMain } from "electron";
-import { Channel, Game, Process, ReplyCode } from "./protocol";
+import { Channel, Game, Process, ReplyCode, gameMessageByIpc } from "./protocol";
+import { color } from "./DashBoard";
 const iconv = require("iconv-lite");
 require('dotenv').config();
 
@@ -22,32 +23,7 @@ export function assignIPCHandler(mainWindow:BrowserWindow) {
     );
 }
 
-type handlerGameFunction = {
-    [key in Game]: (texts:string[]) => void;
-};
-const handlersByM5nStdout:handlerGameFunction = {
-    [Game.SETCOLOR]:(texts:string[])=>{
-        console.log(`[SETCOLOR Handler] ${texts}`);
-    },
-    [Game.SETSTONE]:(texts:string[])=>{
-        console.log("[SETSTONE Handler]");
-    },
-    [Game.CHOOSECOLOR]:(texts:string[])=>{
-        console.log("[CHOOSECOLOR Handler]");
-    },
-    [Game.PLACESTONE]:(texts:string[])=>{
-        console.log("[PLACESTONE Handler]");
-    },
-    [Game.MAKEDECISION]:(texts:string[])=>{
-        console.log("[MAKEDECISION Handler]");
-    },
-    [Game.VICTORY]:(texts:string[])=>{
-        console.log("[VICTORY Handler]");
-    },
-    [Game.DEFEAT]:(texts:string[])=>{
-        console.log("[DEFEAT Handler]");
-    }
-}
+
 
 function m5nStart(mainWindow:BrowserWindow){
     const [server_ip, port, cwd] = [process.env.SERVER_IP, process.env.PORT, process.env.M5N_CWD];
@@ -75,7 +51,65 @@ function m5nStart(mainWindow:BrowserWindow){
         }
         return jobs;
     }
-
+    type handlerGameFunction = {
+        [key in Game]: (texts:string[]) => void;
+    };
+    const handlersByM5nStdout:handlerGameFunction = {
+        [Game.SETCOLOR]:(texts)=>{
+            console.log(`[SETCOLOR Handler] ${texts}`);
+            //서버에서 내 색깔이 정해져서 이를 renderer에 전달해야함
+            const message:gameMessageByIpc = {
+                keyword: Game.SETCOLOR,
+                color: parseInt(texts[0])
+            };
+            mainWindow.webContents.send(Channel.GAME, message);
+        },
+        [Game.SETSTONE]:(texts)=>{
+            console.log(`[SETSTONE Handler] ${texts}`);
+            const temp = texts[0].split(",");
+            const message:gameMessageByIpc = {
+                keyword: Game.SETSTONE,
+                x: parseInt(temp[0]),
+                y: parseInt(temp[1]),
+                color: parseInt(texts[2])
+            };
+            mainWindow.webContents.send(Channel.GAME, message);
+        },
+        [Game.CHOOSECOLOR]:(texts)=>{
+            console.log(`[CHOOSECOLOR Handler] ${texts}`);
+            const message:gameMessageByIpc = {
+                keyword: Game.CHOOSECOLOR
+            };
+            ipcMain.on(Channel.GAME, (_, args:color)=>{
+                //사용자가 색깔을 골랐고, 고른 내용을 ipcRenderer한테서 받아옴
+                ipcMain.removeAllListeners(Channel.GAME);
+                let input = (args===color.WHITE) ? "WHITE" : "BLACK";
+                child.stdin.write(input+"\n");
+            })
+            mainWindow.webContents.send(Channel.GAME, message);
+        },
+        [Game.PLACESTONE]:(texts)=>{
+            console.log("[PLACESTONE Handler]");
+            const message:gameMessageByIpc = {
+                keyword: Game.PLACESTONE
+            };
+            ipcMain.on(Channel.GAME, (_, args:gameMessageByIpc)=>{
+                //사용자가 색깔을 골랐고, 고른 내용을 ipcRenderer한테서 받아옴
+                ipcMain.removeAllListeners(Channel.GAME);
+                child.stdin.write(`${args.x},${args.y}\n`);
+            })
+            mainWindow.webContents.send(Channel.GAME, message);
+        },
+        [Game.MAKEDECISION]:(texts)=>{
+            console.log("[MAKEDECISION Handler]");
+        },
+        [Game.VICTORY]:(texts)=>{
+            console.log("[VICTORY Handler]");
+        },
+        [Game.DEFEAT]:(texts)=>{
+            console.log("[DEFEAT Handler]");
+        }
+    }
     //handler
     child.stdout.on("data", (data:object)=>{
         //console.log(`[STDOUT]${data.toString()}`);
