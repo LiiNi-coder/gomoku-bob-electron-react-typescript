@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
 import { color } from './DashBoard';
 import { turnStatus } from './Page';
-import { ipcRenderer } from 'electron';
-import { Channel, gameMessageByIpc } from './protocol';
+//const ipcRenderer = window.electron.ipcRenderer;
+const {ipcRenderer} = window.require("electron");
+import { Channel } from './protocol';
 
 type boardProps = {
   putStoneOnSquare:(row: number, col: number, colour: color)=>void

@@ -2,9 +2,8 @@ const path = require('path');
 const url = require('url');
 import { spawn } from "child_process";
 import { BrowserWindow, ipcMain } from "electron";
-import { Channel, Game, Process, ReplyCode, gameMessageByIpc } from "./protocol";
+import { Channel, Game, Process, gameMessageByIpc } from "./protocol";
 import { color } from "./DashBoard";
-const iconv = require("iconv-lite");
 require('dotenv').config();
 
 export function assignIPCHandler(mainWindow:BrowserWindow) {
@@ -34,7 +33,7 @@ function m5nStart(mainWindow:BrowserWindow){
             cwd:cwd,
             shell:true,
             //TEST
-            timeout:30000,
+            //timeout:30000,
         }
         );
 
@@ -97,17 +96,33 @@ function m5nStart(mainWindow:BrowserWindow){
                 //사용자가 색깔을 골랐고, 고른 내용을 ipcRenderer한테서 받아옴
                 ipcMain.removeAllListeners(Channel.GAME);
                 child.stdin.write(`${args.x},${args.y}\n`);
-            })
+            });
             mainWindow.webContents.send(Channel.GAME, message);
         },
         [Game.MAKEDECISION]:(texts)=>{
             console.log("[MAKEDECISION Handler]");
+            const message:gameMessageByIpc = {
+                keyword: Game.MAKEDECISION
+            };
+            ipcMain.on(Channel.GAME, (_, args:string)=>{
+                ipcMain.removeAllListeners(Channel.GAME);
+                child.stdin.write(args+'\n');
+            });
+            mainWindow.webContents.send(Channel.GAME, message);
         },
         [Game.VICTORY]:(texts)=>{
             console.log("[VICTORY Handler]");
+            const message:gameMessageByIpc = {
+                keyword:Game.VICTORY
+            };
+            mainWindow.webContents.send(Channel.GAME, message);
         },
         [Game.DEFEAT]:(texts)=>{
             console.log("[DEFEAT Handler]");
+            const message:gameMessageByIpc = {
+                keyword:Game.DEFEAT
+            };
+            mainWindow.webContents.send(Channel.GAME, message);
         }
     }
     //handler

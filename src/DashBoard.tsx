@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Board from "./Board";
-import { Channel, Game, Process, ReplyCode, gameMessageByIpc } from "./protocol";
 import GameControler from "./GameControler";
 
 import GameEntry from "./GameEntry";
@@ -32,7 +30,7 @@ export default function DashBoard({myColor, isMatched, setIsMatched, handleAiLoc
         <GameEntry isMatched={isMatched} handleAiLocalPlayClick={handleAiLocalPlayClick} />
     </div>
     <div className="GameInformation-wrapper" style={{height:300}}>
-        {isMatched === matchStatus.MATCHED && <GameInformation myColor={myColor} />}
+        {isMatched === matchStatus.MATCHED && <GameInformation myColor={myColor} nowTurn={nowTurn}/>}
     </div>
     <div className="GameControler-wrapper" style={{height:135}}>
         {isMatched === matchStatus.MATCHED && <GameControler nowTurn={nowTurn}/>}

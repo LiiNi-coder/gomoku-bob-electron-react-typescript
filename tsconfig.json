@@ -16,5 +16,5 @@
     },
     "jsx":"react-jsx"
   },
-  "include": ["src/**/*"]
+  "include": ["src/global.d.ts","src/**/*", "src/app.tsx", "src/Board.tsx", "src/DashBoard.tsx", "src/GameControler.tsx", "src/GameEntry.tsx", "src/GameInformation.tsx", "src/Page.tsx"]
 }

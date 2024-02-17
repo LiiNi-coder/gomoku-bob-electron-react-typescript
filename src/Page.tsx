@@ -1,9 +1,9 @@
+import React from 'react';
 import { SetStateAction, useState } from "react";
 import Board from "./Board";
 import DashBoard, { color } from "./DashBoard";
 import { Channel, Game, Process, gameMessageByIpc } from "./protocol";
 const { ipcRenderer } = window.require("electron");
-
 export enum matchStatus{
     UNMATCHED,
     // CONNECTING,
